@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalles de la Partitura - {{ partitura.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 style="text-align: center; color: #007bff;">🎼 {{ partitura.titulo }}</h1>
+
+    <div style="max-width: 800px; margin: 0 auto; background: #f8f9fa; padding: 20px; border-radius: 8px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);">
+        <p><strong>🎶 Compositor:</strong> {{ partitura.compositor }}</p>
+        <p><strong>🎵 Género:</strong> {{ partitura.genero }}</p>
+        <p><strong>🎻 Instrumentos:</strong> {{ partitura.instrumentos }}</p>
+        <p><strong>📊 Dificultad:</strong> {{ partitura.dificultad }}</p>
+        <p><strong>📝 Descripción:</strong> {{ partitura.descripcion }}</p>
+
+        <h3 style="text-align: center; margin-top: 20px;">📄 Vista Previa de la Partitura</h3>
+
+        <div style="display: flex; justify-content: center; margin-top: 10px;">
+            <iframe 
+                src="{{ partitura.archivo.url }}" 
+                width="100%" 
+                height="500px" 
+                style="border: none; border-radius: 5px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);">
+            </iframe>
+        </div>
+
+        <p style="text-align: center; margin-top: 10px;">
+            <a href="{{ partitura.archivo.url }}" target="_blank" class="btn btn-primary">🔽 Descargar</a>
+            <a href="{% url 'catalogo' %}" class="btn btn-secondary">⬅️ Volver al catálogo</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

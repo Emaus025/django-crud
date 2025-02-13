@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 style="text-align: center; color: #333; margin-bottom: 20px;">📌 Tareas completadas</h1>
+
+    {% if tasks %}
+    <ul style="list-style: none; padding: 0;">
+        {% for task in tasks %}
+        <li style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);">
+            <a href="{% url 'task_detail' task.id %}" style="text-decoration: none; color: inherit; display: block;">
+                <h2 style="margin: 0; {% if task.important %}color: #dc3545;{% else %}color: #007bff;{% endif %}">
+                    {{ task.title }}
+                </h2>
+                <p style="margin: 5px 0; color: #555;">📝 {{ task.description }}</p>
+                <p style="margin: 5px 0; color: #777;">👤 Author: {{ task.user }}</p>
+                <p style="margin: 5px 0; color: #777;">🔹 Assigned to: {{ task.user }}</p>
+                {% if task.datecompleted %}
+                <p style="margin: 5px 0; color: #28a745;">✅ Completed on: {{ task.datecompleted|date:'M j, Y H:i' }}</p>
+                {% else %}
+                <p style="margin: 5px 0; color: #ffc107;">⏳ Pending...</p>
+                {% endif %}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p style="text-align: center; font-size: 18px; color: #666;">🎉 No pending tasks!</p>
+    {% endif %}
+</div>
+{% endblock %}

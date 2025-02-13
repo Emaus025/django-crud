@@ -1,0 +1,16 @@
+# Ignorar archivos de Python y Django
+__pycache__/
+*.pyc
+*.pyo
+*.env
+*.sqlite3
+db.sqlite3
+
+# Ignorar dependencias de Python
+venv/
+env/
+*.log
+
+# Ignorar configuraciones de VSCode y JetBrains
+.vscode/
+.idea/

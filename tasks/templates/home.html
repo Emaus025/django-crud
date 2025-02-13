@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto p-6 text-center">
+    <h1 class="text-4xl font-bold text-gray-800 mb-4">Bienvenido a Partituras & Tareas</h1>
+    <p class="text-lg text-gray-600 mb-6 max-w-3xl mx-auto">
+        Esta plataforma está diseñada para facilitar la gestión de tus partituras y tareas en un solo lugar. 
+        Organiza tus piezas musicales, asigna tareas pendientes y mantén un flujo de trabajo eficiente. 
+        Nuestro objetivo es ayudarte a enfocarte en lo que realmente importa: la música y la productividad.
+    </p>
+
+    <div class="grid md:grid-cols-2 gap-6 mt-8">
+        <div class="p-6 bg-white shadow-lg rounded-lg">
+            <h2 class="text-2xl font-semibold text-gray-700">📑 Gestión de Partituras</h2>
+            <p class="text-gray-600 mt-2">
+                Sube, organiza y accede a tus partituras fácilmente. Crea categorías, agrega notas y ten 
+                todo tu repertorio siempre a la mano.
+            </p>
+        </div>
+
+        <div class="p-6 bg-white shadow-lg rounded-lg">
+            <h2 class="text-2xl font-semibold text-gray-700">✅ Administración de Tareas</h2>
+            <p class="text-gray-600 mt-2">
+                Define tareas, establece plazos y haz seguimiento de tu progreso. Mantente organizado 
+                y nunca olvides una práctica o un compromiso importante.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

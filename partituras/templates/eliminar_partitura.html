@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Eliminar Partitura</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Eliminar Partitura</h1>
+        <p>¿Estás seguro de que deseas eliminar la partitura "{{ partitura.titulo }}"?</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+            <a href="{% url 'catalogo' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</body>
+</html>
