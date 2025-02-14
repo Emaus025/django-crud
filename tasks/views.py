@@ -1,151 +1,94 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
-from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-from .forms import TaskForm
-from .models import Task
 from django.utils import timezone
-from django.contrib.auth.decorators import login_required
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from .serializers import TaskSerializer
-# Create your views here.
+from rest_framework import status
+from .serializers import TaskSerializer, UserSerializer
+from .models import Task
+from django.contrib.auth import authenticate, login, logout  # Añade esta línea
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def signin(request):
+    if request.method == 'POST':
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return Response({'message': 'Login successful'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Username or password is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
 
-def home(request):
-    return render(request, 'home.html')
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def signup(request):
+    if request.method == 'POST':
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                user = User.objects.create_user(
+                    username=serializer.validated_data['username'],
+                    password=serializer.validated_data['password']
+                )
+                user.save()
+                return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
+            except IntegrityError:
+                return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-def task_list(request):
-    tasks = Task.objects.all()
+@permission_classes([IsAuthenticated])
+def tasks(request):
+    tasks = Task.objects.filter(user=request.user, datecompleted__isnull=True)
     serializer = TaskSerializer(tasks, many=True)
     return Response(serializer.data)
 
-def signup(request):
-
-    if request.method == 'GET':
-        return render(request, 'signup.html', {
-            'form': UserCreationForm
-        })
-    else:
-        if request.POST['password1'] == request.POST['password2']:
-            # register user
-            try:
-                user = User.objects.create_user(username=request.POST['username'],
-                                                password=request.POST['password1'])
-                user.save()
-                login(request, user)
-                return redirect('tasks')
-            except IntegrityError:
-                return render(request, 'signup.html', {
-                    'form': UserCreationForm,
-                    'error': 'Username already exists'
-                })
-        return render(request, 'signup.html', {
-            'form': UserCreationForm,
-            'error': 'Password do not match'
-        })
-        
-@login_required
-def tasks_menu(request):
-    return render(request, 'tasks_menu.html')
-
-@login_required
-def tasks(request):
-    tasks = Task.objects.filter(user=request.user, datecompleted__isnull=True)
-    return render(request, 'tasks.html', {
-        'tasks': tasks
-        })
-    
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def create_task(request):
-    
-    if request.method == 'GET':
-        return render(request, 'create_task.html', {
-            'form': TaskForm
-        })
-    else:
-        try:
-            form = TaskForm(request.POST)
-            new_task = form.save(commit=False)
-            new_task.user = request.user
-            new_task.save()
-            return render(request, 'tasks.html')
-        except:
-            return render(request, 'create_task.html', {
-            'form': TaskForm,
-            'error': 'Please provide valid data'
-        })
+    if request.method == 'POST':
+        serializer = TaskSerializer(data=request.data)
+        if serializer.is_valid():
+            new_task = serializer.save(user=request.user)
+            return Response(TaskSerializer(new_task).data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@login_required
-def tasks_completed(request):
-    tasks = Task.objects.filter(user=request.user, datecompleted__isnull=False).order_by('-datecompleted')
-    return render(request, 'tasks.html', {
-        'tasks': tasks
-        })
-
-@login_required
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 def task_detail(request, task_id):
-    if request.method == 'GET':
-        task = get_object_or_404(Task, pk=task_id, user=request.user)
-        form = TaskForm(instance=task)
-        return render(request, 'task_detail.html', {
-            'task': task,
-            'form': form
-        })
-    else:
-        try:
-            task = get_object_or_404(Task, pk=task_id, user=request.user)
-            form = TaskForm(request.POST, instance=task)
-            form.save()
-            return redirect('tasks_menu')
-        except ValueError:
-            return render(request, 'task_detail.html', {
-            'task': task,
-            'form': form,
-            'error': 'Error updating the task'
-        })
+    task = get_object_or_404(Task, pk=task_id, user=request.user)
+    if request.method == 'PUT':
+        serializer = TaskSerializer(task, data=request.data)
+        if serializer.is_valid():
+            updated_task = serializer.save()
+            return Response(TaskSerializer(updated_task).data)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def complete_task(request, task_id):
     task = get_object_or_404(Task, pk=task_id, user=request.user)
     if request.method == 'POST':
         task.datecompleted = timezone.now()
         task.save()
-        return redirect('tasks_menu')
+        return Response({'message': 'Task completed'})
 
-@login_required    
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def delete_task(request, task_id):
     task = get_object_or_404(Task, pk=task_id, user=request.user)
-    if request.method == 'POST':
-        task.datecompleted = timezone.now()
+    if request.method == 'DELETE':
         task.delete()
-        return redirect('tasks_menu')
+        return Response({'message': 'Task deleted'})
 
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def signout(request):
     logout(request)
-    return redirect('home')
-
-def signin(request):
-    if request.method == 'GET':
-        return render(request, 'signin.html', {
-            'form': AuthenticationForm()  # Asegúrate de instanciar el formulario
-        })
-    else:
-        form = AuthenticationForm(request, data=request.POST)  # Usar el formulario para validar
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('home')
-        # Si el formulario no es válido o la autenticación falla
-        return render(request, 'signin.html', {
-            'form': form,
-            'error': 'Username or password is incorrect'
-        })
-
+    return Response({'message': 'Logged out'})

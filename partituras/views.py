@@ -1,71 +1,54 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
 from .models import Partitura
-from .forms import PartituraForm
+from .serializers import PartituraSerializer
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def menu(request):
-    """
-    Vista para mostrar el menu de partituras.
-    """
     partituras = Partitura.objects.filter(usuario=request.user)
-    return render(request, 'menu.html', {'partituras': partituras})
+    serializer = PartituraSerializer(partituras, many=True)
+    return Response(serializer.data)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def catalogo(request):
-    """
-    Vista para mostrar el catálogo de partituras del usuario.
-    """
     partituras = Partitura.objects.filter(usuario=request.user)
-    return render(request, 'catalogo.html', {'partituras': partituras})
+    serializer = PartituraSerializer(partituras, many=True)
+    return Response(serializer.data)
 
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def subir_partitura(request):
-    """
-    Vista para subir una nueva partitura.
-    """
-    if request.method == 'POST':
-        form = PartituraForm(request.POST, request.FILES)
-        if form.is_valid():
-            partitura = form.save(commit=False)
-            partitura.usuario = request.user  # Asignar el usuario autenticado
-            partitura.save()
-            return redirect('catalogo')  # Redirigir al catálogo
-    else:
-        form = PartituraForm()
-    
-    return render(request, 'subir_partitura.html', {'form': form})
+    serializer = PartituraSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(usuario=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@login_required
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 def actualizar_partitura(request, partitura_id):
-    """
-    Vista para actualizar una partitura existente.
-    """
     partitura = get_object_or_404(Partitura, pk=partitura_id, usuario=request.user)
-    if request.method == 'POST':
-        form = PartituraForm(request.POST, request.FILES, instance=partitura)
-        if form.is_valid():
-            form.save()
-            return redirect('catalogo')  # Redirigir al catálogo
-    else:
-        form = PartituraForm(instance=partitura)
-    
-    return render(request, 'actualizar_partitura.html', {'form': form, 'partitura': partitura})
+    serializer = PartituraSerializer(partitura, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@login_required
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def eliminar_partitura(request, partitura_id):
-    """
-    Vista para eliminar una partitura.
-    """
     partitura = get_object_or_404(Partitura, pk=partitura_id, usuario=request.user)
-    if request.method == 'POST':
-        partitura.delete()
-        return redirect('catalogo')  # Redirigir al catálogo
-    return render(request, 'eliminar_partitura.html', {'partitura': partitura})
+    partitura.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def visualizar_partitura(request, partitura_id):
-    """
-    Vista para visualizar los detalles de una partitura.
-    """
     partitura = get_object_or_404(Partitura, pk=partitura_id, usuario=request.user)
-    return render(request, 'visualizar_partitura.html', {'partitura': partitura})
+    serializer = PartituraSerializer(partitura)
+    return Response(serializer.data)

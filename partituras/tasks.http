@@ -1,0 +1,41 @@
+POST http://localhost:8000/tasks/signup/
+Content-Type: application/json
+
+{
+    "username": "newuser",
+    "password": "newpassword"
+}
+
+POST http://localhost:8000/tasks/signin/
+Content-Type: application/json
+
+{
+    "username": "newuser",
+    "password": "newpassword"
+}
+GET http://localhost:8000/partituras/menu/
+Authorization: Bearer <your_token>
+
+GET http://localhost:8000/partituras/catalogo/
+Authorization: Bearer <your_token>
+
+POST http://localhost:8000/partituras/subir_partitura/
+Authorization: Bearer <your_token>
+Content-Type: multipart/form-data
+
+title=New Partitura&archivo=@/path/to/file.pdf
+
+PUT http://localhost:8000/partituras/actualizar_partitura/1/
+Authorization: Bearer <your_token>
+Content-Type: multipart/form-data
+
+title=Updated Partitura&archivo=@/path/to/new_file.pdf
+
+DELETE http://localhost:8000/partituras/eliminar_partitura/1/
+Authorization: Bearer <your_token>
+
+GET http://localhost:8000/partituras/visualizar_partitura/1/
+Authorization: Bearer <your_token>
+
+POST http://localhost:8000/tasks/signout/
+Authorization: Bearer <your_token>

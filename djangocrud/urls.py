@@ -4,7 +4,7 @@ from tasks import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),  # Panel de administración
-    path('', views.home, name='home'),  # Página de inicio
+#    path('', views.home, name='home'),  # Página de inicio
     path('signup/', views.signup, name='signup'),  # Registro de usuario
     path('signin/', views.signin, name='signin'),  # Inicio de sesión
     path('logout/', views.signout, name='logout'),  # Cerrar sesión
