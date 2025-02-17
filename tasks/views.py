@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
@@ -20,7 +21,7 @@ def signin(request):
             login(request, user)
             return Response({'message': 'Login successful'}, status=status.HTTP_200_OK)
         else:
-            return Response({'error': 'Username or password is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Userzname or password is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
