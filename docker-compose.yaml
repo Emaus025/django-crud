@@ -1,12 +1,56 @@
 version: "3.8"
 
 services:
-  web:
+  web1:
     build: .
     ports:
-      - "8000:8000"
+      - "8001:8000"  # Puerto expuesto para depuración
     volumes:
       - .:/app
       - ./db.sqlite3:/app/db.sqlite3  # Persistencia de la base de datos
     environment:
       - DEBUG=True
+    networks:
+      - app-network
+
+  web2:
+    build: .
+    ports:
+      - "8002:8000"  # Puerto expuesto para depuración
+    volumes:
+      - .:/app
+      - ./db.sqlite3:/app/db.sqlite3  # Persistencia de la base de datos
+    environment:
+      - DEBUG=True
+    networks:
+      - app-network
+
+  web3:
+    build: .
+    ports:
+      - "8003:8000"  # Puerto expuesto para depuración
+    volumes:
+      - .:/app
+      - ./db.sqlite3:/app/db.sqlite3  # Persistencia de la base de datos
+    environment:
+      - DEBUG=True
+    networks:
+      - app-network
+
+  envoy:
+    image: envoyproxy/envoy:v1.24.0
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+    ports:
+      - "8080:8080"  # Puerto público para el balanceador
+      - "9901:9901"  # Puerto para la interfaz de administración de Envoy
+    depends_on:
+      - web1
+      - web2
+      - web3
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
